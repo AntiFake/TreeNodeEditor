@@ -63,16 +63,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\BaseInputNode.cs" />
-    <Compile Include="Assets\Scripts\BaseNode.cs" />
-    <Compile Include="Assets\Scripts\CalcNode.cs" />
-    <Compile Include="Assets\Scripts\ComparisonNode.cs" />
-    <Compile Include="Assets\Scripts\InputNode.cs" />
     <Compile Include="Assets\Scripts\NodeEditor.cs" />
-    <Compile Include="Assets\Scripts\OutputNode.cs" />
     <Compile Include="Assets\Scripts\QuestEditor.cs" />
-    <Compile Include="Assets\Scripts\QuestEditor\BaseQuest.cs" />
-    <Compile Include="Assets\Scripts\QuestEditor\CollectQuest.cs" />
     <Compile Include="Assets\Scripts\QuestEditorClasses.cs" />
     <Compile Include="Assets\Scripts\QuestManager.cs" />
   </ItemGroup>

@@ -117,15 +117,19 @@ namespace QuestManagerEditor
 
                         if (nodesToJoin.Count == 2)
                         {
-                            bool exist = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[0] && i.nodeTo.guid == nodesToJoin[1]) != null ? true : false;
-                            bool existReversed = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[1] && i.nodeTo.guid == nodesToJoin[0]) != null ? true : false;
-                            if (!exist && !existReversed)
+                            // Если не одна и та же нода.
+                            if (nodesToJoin[0] != nodesToJoin[1])
                             {
-                                questLinks.Add(new Link()
+                                bool exist = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[0] && i.nodeTo.guid == nodesToJoin[1]) != null ? true : false;
+                                bool existReversed = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[1] && i.nodeTo.guid == nodesToJoin[0]) != null ? true : false;
+                                if (!exist && !existReversed)
                                 {
-                                    nodeFrom = questNodes.First(i => i.guid == nodesToJoin[0]),
-                                    nodeTo = questNodes.First(i => i.guid == nodesToJoin[1])
-                                });
+                                    questLinks.Add(new Link()
+                                    {
+                                        nodeFrom = questNodes.First(i => i.guid == nodesToJoin[0]),
+                                        nodeTo = questNodes.First(i => i.guid == nodesToJoin[1])
+                                    });
+                                }
                             }
                             nodesToJoin.Clear();
                         }
