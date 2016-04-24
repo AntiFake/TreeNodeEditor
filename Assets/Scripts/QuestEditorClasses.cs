@@ -14,6 +14,7 @@ namespace QuestManagerEditor
         public string title = "";
         public string questName = "";
         public string questDescription = "";
+        public int experienceAmount = 0;
 
         public BaseQuestNode(string t)
         {
@@ -25,6 +26,7 @@ namespace QuestManagerEditor
         {
             questName = EditorGUILayout.TextField("Название квеста:", questName);
             questDescription = EditorGUILayout.TextField("Описание квеста:", questDescription);
+            experienceAmount = EditorGUILayout.IntField("Количество опыта:", experienceAmount);
             questIssuer = (GameObject)EditorGUILayout.ObjectField("Дающий квест: ", questIssuer, typeof(GameObject), true);
             questAcceptor = (GameObject)EditorGUILayout.ObjectField("Принимающий квест: ", questAcceptor, typeof(GameObject), true);
         }
@@ -60,7 +62,6 @@ namespace QuestManagerEditor
         }
     }
 
-
     public class Link
     {
         public BaseQuestNode nodeFrom;
@@ -74,5 +75,11 @@ namespace QuestManagerEditor
             Vector3 endTan = endPos + Vector3.left * 50;
             Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);
         }
+    }
+
+    public class TreeLink
+    {
+        public Guid from;
+        public Guid to;
     }
 }

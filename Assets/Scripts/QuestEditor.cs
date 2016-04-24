@@ -21,8 +21,8 @@ namespace QuestManagerEditor
         public static QuestEditor questEditor;
         public static GameObject obj;
 
-        public List<BaseQuestNode> questNodes = new List<BaseQuestNode>();
-        public List<Link> questLinks = new List<Link>();
+        private List<BaseQuestNode> questNodes = new List<BaseQuestNode>();
+        private List<Link> questLinks = new List<Link>();
         private List<Guid> nodesToJoin = new List<Guid>();
         private List<Guid> nodesToTear = new List<Guid>();
 
@@ -196,6 +196,21 @@ namespace QuestManagerEditor
             }
             EndWindows();
 
+            // Сохранение данных в QuestManager-компонент.
+            if (Selection.activeGameObject != null)
+            {
+                obj = Selection.activeGameObject;
+                QuestManager component = obj.GetComponent<QuestManager>();
+
+                if (component != null)
+                {
+                    if (GUI.Button(new Rect(position.width - 120, position.height - 40, 100, 30), new GUIContent("Сохранить")))
+                    {
+                        component.questTree = questLinks.Select(i => new TreeLink() { from = i.nodeFrom.guid, to = i.nodeTo.guid }).ToList();
+                    }
+                }
+            }
+
             //if (Selection.activeGameObject != null)
             //{
             //    obj = Selection.activeGameObject;
@@ -228,7 +243,6 @@ namespace QuestManagerEditor
 
         private void ContextQuestAddCallback(object questType)
         {
-            Debug.Log(questType.ToString());
             switch ((QuestType)questType)
             {
                 case QuestType.CollectEvent:

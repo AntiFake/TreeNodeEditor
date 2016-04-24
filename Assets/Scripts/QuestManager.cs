@@ -1,19 +1,15 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace QuestManagerEditor
 {
     public class QuestManager : MonoBehaviour
     {
-        public GameObject cam;
-        public int health;
-        public string username;
+        public List<TreeLink> questTree;
 
         public void Start()
         {
-            Debug.Log(health);
-            Debug.Log(cam.name);
-            Debug.Log(username);
+
         }
 
         public void Update()
