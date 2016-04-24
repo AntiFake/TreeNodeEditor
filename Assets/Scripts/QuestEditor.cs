@@ -10,7 +10,7 @@ namespace QuestManagerEditor
     {
         public class DeleteNodeAction
         {
-            public Guid nodeGuid;
+            public string nodeGuid;
         }
 
         private enum QuestType { CollectEvent, KillEvent }
@@ -23,8 +23,8 @@ namespace QuestManagerEditor
 
         private List<BaseQuestNode> questNodes = new List<BaseQuestNode>();
         private List<Link> questLinks = new List<Link>();
-        private List<Guid> nodesToJoin = new List<Guid>();
-        private List<Guid> nodesToTear = new List<Guid>();
+        private List<string> nodesToJoin = new List<string>();
+        private List<string> nodesToTear = new List<string>();
 
         private Vector2 mousePos;
 
@@ -53,7 +53,7 @@ namespace QuestManagerEditor
                 if (e.type == EventType.MouseDown)
                 {
                     bool clickedOnWindow = false;
-                    Guid? clickedWindowGuid = null;
+                    string clickedWindowGuid = null;
 
                     for (int i = 0; i < questNodes.Count; i++)
                     {
@@ -82,7 +82,7 @@ namespace QuestManagerEditor
                     {
                         GenericMenu menuToControlQuest = new GenericMenu();
 
-                        menuToControlQuest.AddItem(new GUIContent("Удалить квест"), false, ContextQuestControlCallback, new DeleteNodeAction() { nodeGuid = clickedWindowGuid.Value });
+                        menuToControlQuest.AddItem(new GUIContent("Удалить квест"), false, ContextQuestControlCallback, new DeleteNodeAction() { nodeGuid = clickedWindowGuid });
 
                         menuToControlQuest.ShowAsContext();
                         e.Use();
@@ -98,7 +98,7 @@ namespace QuestManagerEditor
                 if (e.type == EventType.MouseDown)
                 {
                     bool clickedOnWindow = false;
-                    Guid? clickedWindowGuid = null;
+                    string clickedWindowGuid = null;
 
                     for (int i = 0; i < questNodes.Count; i++)
                     {
@@ -113,7 +113,7 @@ namespace QuestManagerEditor
                     if (clickedOnWindow)
                     {
                         if (nodesToJoin.Count < 2)
-                            nodesToJoin.Add(clickedWindowGuid.Value);
+                            nodesToJoin.Add(clickedWindowGuid);
 
                         if (nodesToJoin.Count == 2)
                         {
@@ -147,7 +147,7 @@ namespace QuestManagerEditor
                 if (e.type == EventType.MouseDown)
                 {
                     bool clickedOnWindow = false;
-                    Guid? clickedWindowGuid = null;
+                    string clickedWindowGuid = null;
 
                     for (int i = 0; i < questNodes.Count; i++)
                     {
@@ -162,7 +162,7 @@ namespace QuestManagerEditor
                     if (clickedOnWindow)
                     {
                         if (nodesToTear.Count < 2)
-                            nodesToTear.Add(clickedWindowGuid.Value);
+                            nodesToTear.Add(clickedWindowGuid);
 
                         if (nodesToTear.Count == 2)
                         {
@@ -183,16 +183,22 @@ namespace QuestManagerEditor
             }
 
             // Отображение ребер графа.
-            foreach (var link in questLinks)
+            if (questLinks != null)
             {
-                link.DrawLink();
+                foreach (var link in questLinks)
+                {
+                    link.DrawLink();
+                }
             }
 
             // Отображение окон нод.
             BeginWindows();
-            for (int i = 0; i < questNodes.Count; i++)
+            if (questNodes != null)
             {
-                questNodes[i].nodeRect = GUI.Window(i, questNodes[i].nodeRect, DrawNodeWindow, questNodes[i].title);
+                for (int i = 0; i < questNodes.Count; i++)
+                {
+                    questNodes[i].nodeRect = GUI.Window(i, questNodes[i].nodeRect, DrawNodeWindow, questNodes[i].title);
+                }
             }
             EndWindows();
 
@@ -206,7 +212,8 @@ namespace QuestManagerEditor
                 {
                     if (GUI.Button(new Rect(position.width - 120, position.height - 40, 100, 30), new GUIContent("Сохранить")))
                     {
-                        component.questTree = questLinks.Select(i => new TreeLink() { from = i.nodeFrom.guid, to = i.nodeTo.guid }).ToList();
+                        if (questLinks != null && questLinks.Any())
+                            component.questTree = Save();
                     }
                 }
             }
@@ -274,9 +281,61 @@ namespace QuestManagerEditor
         /// Удаление ребер, исходящих/входящих в удаляемую ноду.
         /// </summary>
         /// <param name="nodeGuid"></param>
-        private void DeleteNodeLinks(Guid nodeGuid)
+        private void DeleteNodeLinks(string nodeGuid)
         {
             questLinks = questLinks.Where(i => i.nodeFrom.guid != nodeGuid && i.nodeTo.guid != nodeGuid).ToList();
+        }
+
+        private List<TreeLink> Save()
+        {
+            List<TreeLink> treeLinks = new List<TreeLink>();
+
+            foreach (var link in questLinks)
+            {
+                TreeLink l = new TreeLink()
+                {
+                    questFrom = GetTreeQuest(link.nodeFrom),
+                    questTo = GetTreeQuest(link.nodeTo),
+                };
+                treeLinks.Add(l);
+            }
+
+            return treeLinks;
+        }
+
+        private BaseQuest GetTreeQuest(BaseQuestNode node)
+        {
+            BaseQuest quest = null;
+
+            if (node is CollectQuestNode)
+            {
+                quest = new CollectQuest()
+                {
+                    questIssuer = (node as CollectQuestNode).quest.questIssuer,
+                    questAcceptor = (node as CollectQuestNode).quest.questAcceptor,
+                    questName = (node as CollectQuestNode).quest.questName,
+                    questDescription = (node as CollectQuestNode).quest.questDescription,
+                    experienceAmount = (node as CollectQuestNode).quest.experienceAmount,
+                    objectCount = ((node as CollectQuestNode).quest as CollectQuest).objectCount,
+                    objectToCollect = ((node as CollectQuestNode).quest as CollectQuest).objectToCollect
+                };
+            }
+
+            if (node is KillQuestNode)
+            {
+                quest = new KillQuest()
+                {
+                    questIssuer = (node as KillQuestNode).quest.questIssuer,
+                    questAcceptor = (node as KillQuestNode).quest.questAcceptor,
+                    questName = (node as KillQuestNode).quest.questName,
+                    questDescription = (node as KillQuestNode).quest.questDescription,
+                    experienceAmount = (node as KillQuestNode).quest.experienceAmount,
+                    objectCount = ((node as CollectQuestNode).quest as KillQuest).objectCount,
+                    objectToKill = ((node as CollectQuestNode).quest as KillQuest).objectToKill
+                };
+            }
+
+            return quest;
         }
     }
 }
