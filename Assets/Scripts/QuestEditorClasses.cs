@@ -27,11 +27,6 @@ namespace QuestManagerEditor
             questLinks = new List<Link>();
             questNodes = new List<QuestNode>();
         }
-
-        public void OnEnable()
-        {
-            hideFlags = HideFlags.HideAndDontSave;
-        }
     }
 
     [Serializable]

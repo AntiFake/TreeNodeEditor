@@ -17,7 +17,6 @@ namespace QuestManagerEditor
         private const float windowHeight = 200f;
 
         public static QuestEditor questEditor;
-
         public ComponentData data;
 
         private List<string> nodesToJoin = new List<string>();
@@ -207,14 +206,14 @@ namespace QuestManagerEditor
             {
                 data.obj = Selection.activeGameObject;
                 QuestManager component = data.obj.GetComponent<QuestManager>();
-
+                
                 if (component != null)
                 {
                     if (GUI.Button(new Rect(position.width - 120, position.height - 40, 100, 30), new GUIContent("Сохранить")))
                     {
                         if (data.questLinks != null && data.questLinks.Any())
                         {
-                            component.data = data;
+                            data.obj.GetComponent<QuestManager>().data = data;
                         }
                     }
                 }
