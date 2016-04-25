@@ -11,7 +11,10 @@ namespace QuestManagerEditor
 
         public void Start()
         {
-
+			if (data == null)
+				Debug.Log ("ХУЙ!");
+			else
+				Debug.Log ("Та неужели");
         }
 
         public void Update()

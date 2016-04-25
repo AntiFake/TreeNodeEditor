@@ -13,6 +13,9 @@ namespace QuestManagerEditor
     [Serializable]
     public class ComponentData : ScriptableObject
     {
+		[SerializeField]
+		public int counter;
+
         [SerializeField]
         public List<QuestNode> questNodes;
 
@@ -26,39 +29,33 @@ namespace QuestManagerEditor
         {
             questLinks = new List<Link>();
             questNodes = new List<QuestNode>();
+			counter = 0;
         }
+
+		public void OnEnable() { hideFlags = HideFlags.HideAndDontSave; }
     }
 
     [Serializable]
     public class Link
     {
         [SerializeField]
-        public QuestNode nodeFrom;
+        public string nodeFromGuid;
 
-        [SerializeField]
-        public QuestNode nodeTo;
-
-        public void DrawLink()
-        {
-            Vector3 startPos = new Vector3(nodeFrom.nodeRect.x + nodeFrom.nodeRect.width, nodeFrom.nodeRect.y + nodeFrom.nodeRect.height / 2, 0);
-            Vector3 endPos = new Vector3(nodeTo.nodeRect.x, nodeTo.nodeRect.y + nodeTo.nodeRect.height / 2, 0);
-            Vector3 startTan = startPos + Vector3.right * 50;
-            Vector3 endTan = endPos + Vector3.left * 50;
-            Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);
-        }
-    }
+		[SerializeField]
+		public string nodeToGuid;
+	}
 
     [Serializable]
     public class QuestNode
     {
-        [SerializeField]
+		[SerializeField]
         public string guid;
 
-        [SerializeField]
-        public string title;
+		[SerializeField]
+		public string title;
 
-        [SerializeField]
-        public Rect nodeRect;
+		[SerializeField]
+		public Rect nodeRect;
 
         [SerializeField]
         public QuestType questType;
@@ -93,7 +90,6 @@ namespace QuestManagerEditor
         public QuestNode()
         {
             guid = Guid.NewGuid().ToString();
-            title = "1";
         }
 
         public void DrawNodeWindow()
