@@ -1,64 +1,36 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System;
+using System.Collections.Generic;
 
 namespace QuestManagerEditor
 {
-    [Serializable]
-    public abstract class BaseQuestNode : ScriptableObject
+    public enum QuestType
     {
-        public string guid;
-        public string title;
-        public Rect nodeRect;
+        CollectQuest, KillQuest
+    }
+
+    [Serializable]
+    public class ComponentData : ScriptableObject
+    {
+        [SerializeField]
+        public List<QuestNode> questNodes;
 
         [SerializeField]
-        public BaseQuest quest;
+        public List<Link> questLinks;
 
-        public BaseQuestNode(string t)
+        [SerializeField]
+        public GameObject obj;
+
+        public ComponentData()
         {
-            guid = Guid.NewGuid().ToString();
-            title = t;
+            questLinks = new List<Link>();
+            questNodes = new List<QuestNode>();
         }
 
-        public virtual void DrawNodeWindow() { }
-    }
-
-    [Serializable]
-    public class CollectQuestNode : BaseQuestNode
-    {
-        public CollectQuestNode() : base("Сбор предметов")
+        public void OnEnable()
         {
-        }
-
-        public override void DrawNodeWindow()
-        {
-            quest.questName = EditorGUILayout.TextField("Название квеста:", quest.questName);
-            quest.questDescription = EditorGUILayout.TextField("Описание квеста:", quest.questDescription);
-            quest.experienceAmount = EditorGUILayout.IntField("Количество опыта:", quest.experienceAmount);
-            quest.questIssuer = (GameObject)EditorGUILayout.ObjectField("Дающий квест: ", quest.questIssuer, typeof(GameObject), true);
-            quest.questAcceptor = (GameObject)EditorGUILayout.ObjectField("Принимающий квест: ", quest.questAcceptor, typeof(GameObject), true);
-            (quest as CollectQuest).objectCount = EditorGUILayout.IntField("Число объектов: ", (quest as CollectQuest).objectCount);
-            (quest as CollectQuest).objectToCollect = (GameObject)EditorGUILayout.ObjectField("Тип объекта: ", (quest as CollectQuest).objectToCollect, typeof(GameObject), true);
-        }
-    }
-
-    [Serializable]
-    public class KillQuestNode : BaseQuestNode
-    {
-        public KillQuestNode() : base("Убийство мобов")
-        {
-
-        }
-
-        public override void DrawNodeWindow()
-        {
-            quest.questName = EditorGUILayout.TextField("Название квеста:", quest.questName);
-            quest.questDescription = EditorGUILayout.TextField("Описание квеста:", quest.questDescription);
-            quest.experienceAmount = EditorGUILayout.IntField("Количество опыта:", quest.experienceAmount);
-            quest.questIssuer = (GameObject)EditorGUILayout.ObjectField("Дающий квест: ", quest.questIssuer, typeof(GameObject), true);
-            quest.questAcceptor = (GameObject)EditorGUILayout.ObjectField("Принимающий квест: ", quest.questAcceptor, typeof(GameObject), true);
-            (quest as KillQuest).objectCount = EditorGUILayout.IntField("Число мобов: ", (quest as KillQuest).objectCount);
-            (quest as KillQuest).objectToKill = (GameObject)EditorGUILayout.ObjectField("Тип моба: ", (quest as KillQuest).objectToKill, typeof(GameObject), true);
+            hideFlags = HideFlags.HideAndDontSave;
         }
     }
 
@@ -66,10 +38,10 @@ namespace QuestManagerEditor
     public class Link
     {
         [SerializeField]
-        public BaseQuestNode nodeFrom;
+        public QuestNode nodeFrom;
 
         [SerializeField]
-        public BaseQuestNode nodeTo;
+        public QuestNode nodeTo;
 
         public void DrawLink()
         {
@@ -82,17 +54,20 @@ namespace QuestManagerEditor
     }
 
     [Serializable]
-    public class TreeLink
+    public class QuestNode
     {
         [SerializeField]
-        public BaseQuest questFrom;
-        [SerializeField]
-        public BaseQuest questTo;
-    }
+        public string guid;
 
-    [Serializable]
-    public class BaseQuest
-    {
+        [SerializeField]
+        public string title;
+
+        [SerializeField]
+        public Rect nodeRect;
+
+        [SerializeField]
+        public QuestType questType;
+
         [SerializeField]
         public GameObject questIssuer;
 
@@ -107,25 +82,46 @@ namespace QuestManagerEditor
 
         [SerializeField]
         public int experienceAmount = 0;
-    }
 
-    [Serializable]
-    public class KillQuest : BaseQuest
-    {
+        // KillQuest
         [SerializeField]
-        public int objectCount;
-
+        public int objectCountToKill;
         [SerializeField]
         public GameObject objectToKill;
-    }
 
-    [Serializable]
-    public class CollectQuest : BaseQuest
-    {
+        // CollectQuest
         [SerializeField]
-        public int objectCount;
-
+        public int objectCountToCollect;
         [SerializeField]
         public GameObject objectToCollect;
+
+        public QuestNode()
+        {
+            guid = Guid.NewGuid().ToString();
+            title = "1";
+        }
+
+        public void DrawNodeWindow()
+        {
+            questType = (QuestType) EditorGUILayout.EnumPopup("Тип квеста: ", questType);
+
+            questName = EditorGUILayout.TextField("Название квеста:", questName);
+            questDescription = EditorGUILayout.TextField("Описание квеста:", questDescription);
+            experienceAmount = EditorGUILayout.IntField("Количество опыта:", experienceAmount);
+            questIssuer = (GameObject)EditorGUILayout.ObjectField("Дающий квест: ", questIssuer, typeof(GameObject), true);
+            questAcceptor = (GameObject)EditorGUILayout.ObjectField("Принимающий квест: ", questAcceptor, typeof(GameObject), true);
+
+            if (questType == QuestType.KillQuest)
+            {
+                objectCountToKill = EditorGUILayout.IntField("Число мобов: ", objectCountToKill);
+                objectToKill = (GameObject)EditorGUILayout.ObjectField("Тип моба: ", objectToKill, typeof(GameObject), true);
+            }
+
+            if (questType == QuestType.CollectQuest)
+            {
+                objectCountToCollect = EditorGUILayout.IntField("Число объектов: ", objectCountToCollect);
+                objectToCollect = (GameObject)EditorGUILayout.ObjectField("Тип объекта: ", objectToCollect, typeof(GameObject), true);
+            }
+        }
     }
 }

@@ -13,16 +13,13 @@ namespace QuestManagerEditor
             public string nodeGuid;
         }
 
-        private enum QuestType { CollectEvent, KillEvent }
-
         private const float windowWidth = 250f;
-        private const float windowHeight = 150f;
+        private const float windowHeight = 200f;
 
         public static QuestEditor questEditor;
-        public static GameObject obj;
 
-        private List<BaseQuestNode> questNodes = new List<BaseQuestNode>();
-        private List<Link> questLinks = new List<Link>();
+        public ComponentData data;
+
         private List<string> nodesToJoin = new List<string>();
         private List<string> nodesToTear = new List<string>();
 
@@ -31,8 +28,15 @@ namespace QuestManagerEditor
         [MenuItem("Tools/Quest editor")]
         private static void ShowEditor()
         {
-            questEditor = EditorWindow.GetWindow<QuestEditor>();
+            questEditor = GetWindow<QuestEditor>();
             questEditor.titleContent = new GUIContent("Редактор квестов");
+        }
+
+        private void OnEnable()
+        {
+            hideFlags = HideFlags.HideAndDontSave;
+            if (data == null)
+                data = CreateInstance<ComponentData>();
         }
 
         private void OnGUI()
@@ -55,11 +59,11 @@ namespace QuestManagerEditor
                     bool clickedOnWindow = false;
                     string clickedWindowGuid = null;
 
-                    for (int i = 0; i < questNodes.Count; i++)
+                    for (int i = 0; i < data.questNodes.Count; i++)
                     {
-                        if (questNodes[i].nodeRect.Contains(mousePos))
+                        if (data.questNodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = questNodes[i].guid;
+                            clickedWindowGuid = data.questNodes[i].guid;
                             clickedOnWindow = true;
                             break;
                         }
@@ -70,9 +74,7 @@ namespace QuestManagerEditor
                     {
                         GenericMenu menuToAddQuest = new GenericMenu();
 
-                        menuToAddQuest.AddItem(new GUIContent("Сбор предметов"), false, ContextQuestAddCallback, QuestType.CollectEvent);
-                        menuToAddQuest.AddSeparator("");
-                        menuToAddQuest.AddItem(new GUIContent("Убийство мобов"), false, ContextQuestAddCallback, QuestType.KillEvent);
+                        menuToAddQuest.AddItem(new GUIContent("Добавить квест"), false, ContextQuestAddCallback, null);
 
                         menuToAddQuest.ShowAsContext();
                         e.Use();
@@ -100,11 +102,11 @@ namespace QuestManagerEditor
                     bool clickedOnWindow = false;
                     string clickedWindowGuid = null;
 
-                    for (int i = 0; i < questNodes.Count; i++)
+                    for (int i = 0; i < data.questNodes.Count; i++)
                     {
-                        if (questNodes[i].nodeRect.Contains(mousePos))
+                        if (data.questNodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = questNodes[i].guid;
+                            clickedWindowGuid = data.questNodes[i].guid;
                             clickedOnWindow = true;
                             break;
                         }
@@ -120,14 +122,14 @@ namespace QuestManagerEditor
                             // Если не одна и та же нода.
                             if (nodesToJoin[0] != nodesToJoin[1])
                             {
-                                bool exist = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[0] && i.nodeTo.guid == nodesToJoin[1]) != null ? true : false;
-                                bool existReversed = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[1] && i.nodeTo.guid == nodesToJoin[0]) != null ? true : false;
+                                bool exist = data.questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[0] && i.nodeTo.guid == nodesToJoin[1]) != null ? true : false;
+                                bool existReversed = data.questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToJoin[1] && i.nodeTo.guid == nodesToJoin[0]) != null ? true : false;
                                 if (!exist && !existReversed)
                                 {
-                                    questLinks.Add(new Link()
+                                    data.questLinks.Add(new Link()
                                     {
-                                        nodeFrom = questNodes.First(i => i.guid == nodesToJoin[0]),
-                                        nodeTo = questNodes.First(i => i.guid == nodesToJoin[1])
+                                        nodeFrom = data.questNodes.First(i => i.guid == nodesToJoin[0]),
+                                        nodeTo = data.questNodes.First(i => i.guid == nodesToJoin[1])
                                     });
                                 }
                             }
@@ -149,11 +151,11 @@ namespace QuestManagerEditor
                     bool clickedOnWindow = false;
                     string clickedWindowGuid = null;
 
-                    for (int i = 0; i < questNodes.Count; i++)
+                    for (int i = 0; i < data.questNodes.Count; i++)
                     {
-                        if (questNodes[i].nodeRect.Contains(mousePos))
+                        if (data.questNodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = questNodes[i].guid;
+                            clickedWindowGuid = data.questNodes[i].guid;
                             clickedOnWindow = true;
                             break;
                         }
@@ -166,13 +168,13 @@ namespace QuestManagerEditor
 
                         if (nodesToTear.Count == 2)
                         {
-                            Link link = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToTear[0] && i.nodeTo.guid == nodesToTear[1]);
-                            Link linkReversed = questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToTear[1] && i.nodeTo.guid == nodesToTear[0]);
+                            Link link = data.questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToTear[0] && i.nodeTo.guid == nodesToTear[1]);
+                            Link linkReversed = data.questLinks.FirstOrDefault(i => i.nodeFrom.guid == nodesToTear[1] && i.nodeTo.guid == nodesToTear[0]);
 
                             if (link != null)
-                                questLinks.Remove(link);
+                                data.questLinks.Remove(link);
                             else if (linkReversed != null)
-                                questLinks.Remove(linkReversed);
+                                data.questLinks.Remove(linkReversed);
 
                             nodesToTear.Clear();
                         }
@@ -182,55 +184,41 @@ namespace QuestManagerEditor
                 }
             }
 
+            
             // Отображение ребер графа.
-            if (questLinks != null)
+            foreach (var link in data.questLinks)
             {
-                foreach (var link in questLinks)
-                {
-                    link.DrawLink();
-                }
+                link.DrawLink();
             }
 
             // Отображение окон нод.
             BeginWindows();
-            if (questNodes != null)
+            for (int i = 0; i < data.questNodes.Count; i++)
             {
-                for (int i = 0; i < questNodes.Count; i++)
-                {
-                    questNodes[i].nodeRect = GUI.Window(i, questNodes[i].nodeRect, DrawNodeWindow, questNodes[i].title);
-                }
+                data.questNodes[i].nodeRect = GUI.Window(i, data.questNodes[i].nodeRect, DrawNodeWindow, data.questNodes[i].title);
             }
             EndWindows();
+
+            EditorGUILayout.LabelField("Число нод: " + data.questNodes.Count.ToString());
+            EditorGUILayout.LabelField("Число линков: " + data.questLinks.Count.ToString());
 
             // Сохранение данных в QuestManager-компонент.
             if (Selection.activeGameObject != null)
             {
-                obj = Selection.activeGameObject;
-                QuestManager component = obj.GetComponent<QuestManager>();
+                data.obj = Selection.activeGameObject;
+                QuestManager component = data.obj.GetComponent<QuestManager>();
 
                 if (component != null)
                 {
                     if (GUI.Button(new Rect(position.width - 120, position.height - 40, 100, 30), new GUIContent("Сохранить")))
                     {
-                        if (questLinks != null && questLinks.Any())
-                            component.questTree = Save();
+                        if (data.questLinks != null && data.questLinks.Any())
+                        {
+                            component.data = data;
+                        }
                     }
                 }
             }
-
-            //if (Selection.activeGameObject != null)
-            //{
-            //    obj = Selection.activeGameObject;
-            //    EditorGUILayout.LabelField("Current selected object: " + obj.name);
-
-            //    QuestManager comp = obj.GetComponent<QuestManager>();
-            //    if (comp != null)
-            //    {
-            //        comp.health = EditorGUILayout.IntField(comp.health);
-            //        comp.username = EditorGUILayout.TextField(comp.username);
-            //        comp.cam = (GameObject) EditorGUILayout.ObjectField("Camera", comp.cam, typeof(GameObject), true);
-            //    }
-            //}
         }
 
         private void Update()
@@ -244,27 +232,16 @@ namespace QuestManagerEditor
         /// <param name="id"></param>
         private void DrawNodeWindow(int id)
         {
-            questNodes[id].DrawNodeWindow();
+            data.questNodes[id].DrawNodeWindow();
             GUI.DragWindow();
         }
 
-        private void ContextQuestAddCallback(object questType)
+        private void ContextQuestAddCallback(object obj)
         {
-            switch ((QuestType)questType)
+            data.questNodes.Add(new QuestNode()
             {
-                case QuestType.CollectEvent:
-                    questNodes.Add(new CollectQuestNode()
-                    {
-                        nodeRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight)
-                    });
-                    break;
-                case QuestType.KillEvent:
-                    questNodes.Add(new KillQuestNode()
-                    {
-                        nodeRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight)
-                    });
-                    break;
-            }
+                nodeRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight)
+            });
         }
 
         private void ContextQuestControlCallback(object controlActionType)
@@ -273,7 +250,7 @@ namespace QuestManagerEditor
             if (deleteAction != null)
             {
                 DeleteNodeLinks(deleteAction.nodeGuid);
-                questNodes = questNodes.Where(i => i.guid != deleteAction.nodeGuid).ToList();
+                data.questNodes = data.questNodes.Where(i => i.guid != deleteAction.nodeGuid).ToList();
             }
         }
 
@@ -283,59 +260,67 @@ namespace QuestManagerEditor
         /// <param name="nodeGuid"></param>
         private void DeleteNodeLinks(string nodeGuid)
         {
-            questLinks = questLinks.Where(i => i.nodeFrom.guid != nodeGuid && i.nodeTo.guid != nodeGuid).ToList();
+            data.questLinks = data.questLinks.Where(i => i.nodeFrom.guid != nodeGuid && i.nodeTo.guid != nodeGuid).ToList();
         }
 
-        private List<TreeLink> Save()
-        {
-            List<TreeLink> treeLinks = new List<TreeLink>();
+        //private List<TreeLink> Save()
+        //{
+        //    List<TreeLink> treeLinks = new List<TreeLink>();
 
-            foreach (var link in questLinks)
-            {
-                TreeLink l = new TreeLink()
-                {
-                    questFrom = GetTreeQuest(link.nodeFrom),
-                    questTo = GetTreeQuest(link.nodeTo),
-                };
-                treeLinks.Add(l);
-            }
+        //    foreach (var link in data.questLinks)
+        //    {
+        //        TreeLink l = new TreeLink()
+        //        {
+        //            questFrom = GetTreeQuest(link.nodeFrom),
+        //            questTo = GetTreeQuest(link.nodeTo),
+        //        };
+        //        treeLinks.Add(l);
+        //    }
 
-            return treeLinks;
-        }
+        //    return treeLinks;
+        //}
 
-        private BaseQuest GetTreeQuest(BaseQuestNode node)
-        {
-            BaseQuest quest = null;
+        //private Quest GetTreeQuest(QuestNode node)
+        //{
+        //    Quest quest = new Quest()
+        //    {
+        //        questType = node.quest.questType,
+        //        questIssuer = node.quest.questIssuer,
+        //        questAcceptor = node.quest.questAcceptor,
+        //        questName = node.quest.questName,
+        //        questDescription = node.quest.questDescription,
+        //        experienceAmount = node.quest.experienceAmount,
+        //        objectCountToCollect = node.quest.objectCountToCollect,
+        //        objectToCollect = node.quest.objectToCollect,
+        //        objectCountToKill = node.quest.objectCountToKill,
+        //        objectToKill = node.quest.objectToKill
+        //    };
 
-            if (node is CollectQuestNode)
-            {
-                quest = new CollectQuest()
-                {
-                    questIssuer = (node as CollectQuestNode).quest.questIssuer,
-                    questAcceptor = (node as CollectQuestNode).quest.questAcceptor,
-                    questName = (node as CollectQuestNode).quest.questName,
-                    questDescription = (node as CollectQuestNode).quest.questDescription,
-                    experienceAmount = (node as CollectQuestNode).quest.experienceAmount,
-                    objectCount = ((node as CollectQuestNode).quest as CollectQuest).objectCount,
-                    objectToCollect = ((node as CollectQuestNode).quest as CollectQuest).objectToCollect
-                };
-            }
+        //    return quest;
+        //}
 
-            if (node is KillQuestNode)
-            {
-                quest = new KillQuest()
-                {
-                    questIssuer = (node as KillQuestNode).quest.questIssuer,
-                    questAcceptor = (node as KillQuestNode).quest.questAcceptor,
-                    questName = (node as KillQuestNode).quest.questName,
-                    questDescription = (node as KillQuestNode).quest.questDescription,
-                    experienceAmount = (node as KillQuestNode).quest.experienceAmount,
-                    objectCount = ((node as CollectQuestNode).quest as KillQuest).objectCount,
-                    objectToKill = ((node as CollectQuestNode).quest as KillQuest).objectToKill
-                };
-            }
 
-            return quest;
-        }
+        //private void OnEnable()
+        //{
+        //    EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
+        //}
+
+        //private void OnDisable()
+        //{
+        //    EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+        //}
+
+        //private void OnPlaymodeStateChanged()
+        //{
+        //    if (EditorApplication.isPlaying)
+        //    {
+        //        foreach (var questNodeId in data.questNodeIds)
+        //        {
+        //            data.questNodes.Add(EditorUtility.InstanceIDToObject(questNodeId) as QuestNode);
+        //        }
+        //    }
+        //}
+
+
     }
 }
