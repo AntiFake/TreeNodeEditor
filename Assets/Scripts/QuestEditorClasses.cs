@@ -22,9 +22,6 @@ namespace QuestManagerEditor
         [SerializeField]
         public List<Link> questLinks;
 
-        [SerializeField]
-        public GameObject obj;
-
         public ComponentData()
         {
             questLinks = new List<Link>();
@@ -52,7 +49,7 @@ namespace QuestManagerEditor
         public string guid;
 
         [SerializeField]
-        public string title;
+        public int number;
 
         [SerializeField]
         public Rect nodeRect;

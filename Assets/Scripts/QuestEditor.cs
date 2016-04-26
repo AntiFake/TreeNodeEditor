@@ -17,7 +17,7 @@ namespace QuestManagerEditor
         private const float windowHeight = 200f;
 
         public static QuestEditor questEditor;
-		public ComponentData data;
+        public ComponentData data;
 
         private List<string> nodesToJoin = new List<string>();
         private List<string> nodesToTear = new List<string>();
@@ -35,7 +35,12 @@ namespace QuestManagerEditor
         {
             if (data == null)
                 data = CreateInstance<ComponentData>();
-			hideFlags = HideFlags.HideAndDontSave;
+            hideFlags = HideFlags.HideAndDontSave;
+        }
+
+        private void Update()
+        {
+            Repaint();
         }
 
         private void OnGUI()
@@ -127,8 +132,8 @@ namespace QuestManagerEditor
                                 {
                                     data.questLinks.Add(new Link()
                                     {
-										nodeFromGuid = data.questNodes.First(i => i.guid == nodesToJoin[0]).guid,
-										nodeToGuid = data.questNodes.First(i => i.guid == nodesToJoin[1]).guid
+                                        nodeFromGuid = data.questNodes.First(i => i.guid == nodesToJoin[0]).guid,
+                                        nodeToGuid = data.questNodes.First(i => i.guid == nodesToJoin[1]).guid
                                     });
                                 }
                             }
@@ -152,7 +157,7 @@ namespace QuestManagerEditor
 
                     for (int i = 0; i < data.questNodes.Count; i++)
                     {
-						if (data.questNodes[i].nodeRect.Contains(mousePos))
+                        if (data.questNodes[i].nodeRect.Contains(mousePos))
                         {
                             clickedWindowGuid = data.questNodes[i].guid;
                             clickedOnWindow = true;
@@ -182,75 +187,29 @@ namespace QuestManagerEditor
                         nodesToTear.Clear();
                 }
             }
-            
-			// Отображение дерева.
-			GUI.BeginGroup (new Rect(0, 0, position.width, position.height));
-            // Отображение ребер графа.
-            foreach (var link in data.questLinks)
-            {
-				DrawLink(data.questNodes.First(i => i.guid == link.nodeFromGuid).nodeRect, data.questNodes.First(i => i.guid == link.nodeToGuid).nodeRect);
-            }
 
-            // Отображение окон нод.
-            BeginWindows();
-            for (int i = 0; i < data.questNodes.Count; i++)
-            {
-				data.questNodes[i].nodeRect = GUI.Window(i, data.questNodes[i].nodeRect, DrawNodeWindow, data.questNodes[i].title);
-            }
-            EndWindows();
-			GUI.EndGroup ();
-
-            EditorGUILayout.LabelField("Число нод: " + data.questNodes.Count.ToString());
-            EditorGUILayout.LabelField("Число линков: " + data.questLinks.Count.ToString());
-			EditorGUILayout.LabelField("Счетчик нод: " + data.counter.ToString());
-
-            // Сохранение данных в QuestManager-компонент.
-            if (Selection.activeGameObject != null)
-            {
-                data.obj = Selection.activeGameObject;
-                QuestManager component = data.obj.GetComponent<QuestManager>();
-                
-                if (component != null)
-                {
-                    if (GUI.Button(new Rect(position.width - 120, position.height - 40, 100, 30), new GUIContent("Сохранить")))
-                    {
-                        if (data.questLinks != null && data.questLinks.Any())
-                        {
-							component.data = data;
-                            component.nodes = data.questNodes;
-                            component.links = data.questLinks;
-							//data.obj.GetComponent<QuestManager>().data = data;
-                        }
-                    }
-                }
-            }
+            DrawEditor();
         }
 
-        private void Update()
-        {
-            Repaint();
-        }
-
+        #region Контекстное меню
         /// <summary>
-        /// Отображение окна ноды с указанным id.
+        /// Добавление ноды.
         /// </summary>
-        /// <param name="id"></param>
-        private void DrawNodeWindow(int id)
-        {
-            data.questNodes[id].DrawNodeWindow();
-            GUI.DragWindow();
-        }
-
+        /// <param name="obj">Object.</param>
         private void ContextQuestAddCallback(object obj)
         {
             data.questNodes.Add(new QuestNode()
             {
                 nodeRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight),
-				title = data.counter.ToString()
+                number = data.counter
             });
-			data.counter++;
+            data.counter++;
         }
 
+        /// <summary>
+        /// Контекстное меню ноды.
+        /// </summary>
+        /// <param name="controlActionType">Control action type.</param>
         private void ContextQuestControlCallback(object controlActionType)
         {
             DeleteNodeAction deleteAction = controlActionType as DeleteNodeAction;
@@ -270,47 +229,126 @@ namespace QuestManagerEditor
             data.questLinks = data.questLinks.Where(i => i.nodeFromGuid != nodeGuid && i.nodeToGuid != nodeGuid).ToList();
         }
 
-		/// <summary>
-		/// Отображение ребра ор. графа.
-		/// </summary>
-		/// <param name="nodeFrom">Node from.</param>
-		/// <param name="nodeTo">Node to.</param>
-		private void DrawLink(Rect rectFrom, Rect rectTo)
-		{
-			Vector3 startPos = new Vector3(rectFrom.x + rectFrom.width, rectFrom.y + rectFrom.height / 2, 0);
-			Vector3 endPos = new Vector3(rectTo.x, rectTo.y + rectTo.height / 2, 0);
-			Vector3 startTan = startPos + Vector3.right * 50;
-			Vector3 endTan = endPos + Vector3.left * 50;
+        #endregion
 
-			// Тень.
-			Color shadowCol = new Color(0, 0, 0, 0.06f);
-			for (int i = 0; i < 3; i++) 
-			{
-				Handles.DrawBezier(startPos, endPos, startTan, endTan, shadowCol, null, (i + 1) * 5);
-			}
+        #region Отображение
+        /// <summary>
+        /// Отображенение основных компонентов редактора
+        /// </summary>
+        private void DrawEditor()
+        {
+            EditorGUILayout.LabelField("Число нод: " + data.questNodes.Count.ToString());
+            EditorGUILayout.LabelField("Число линков: " + data.questLinks.Count.ToString());
+            EditorGUILayout.LabelField("Счетчик нод: " + data.counter.ToString());
 
-			Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);
-		}
+            // -------------- Отображение дерева. ------------------
+            GUI.BeginGroup(new Rect(0, 0, position.width, position.height));
 
-        //private void OnEnable()
-        //{
-        //    EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
-        //}
+            // -------------- Кнопки управления. -------------------
+            if (GUI.Button(new Rect(5, 60, 50, 30), "Load"))
+            {
+                if (Selection.activeGameObject != null)
+                {
+                    QuestManager component = Selection.activeGameObject.GetComponent<QuestManager>();
+                    if (component != null)
+                        Load(component);
+                }
+            }
 
-        //private void OnDisable()
-        //{
-        //    EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
-        //}
+            // Очистка данных.
+            if (GUI.Button(new Rect(65, 60, 50, 30), "Clean"))
+            {
+                //data = new ComponentData();
+                data.questLinks.Clear();
+                data.questNodes.Clear();
+            }
 
-        //private void OnPlaymodeStateChanged()
-        //{
-        //    if (EditorApplication.isPlaying)
-        //    {
-        //        foreach (var questNodeId in data.questNodeIds)
-        //        {
-        //            data.questNodes.Add(EditorUtility.InstanceIDToObject(questNodeId) as QuestNode);
-        //        }
-        //    }
-        //}
+            // Сохранение данных.
+            if (GUI.Button(new Rect(125, 60, 50, 30), "Save"))
+            {
+                if (Selection.activeGameObject != null)
+                {
+                    QuestManager component = Selection.activeGameObject.GetComponent<QuestManager>();
+                    if (component != null)
+                    {
+                        if (data.questLinks != null && data.questLinks.Any())
+                        {
+                            component.nodes.Clear();
+                            component.nodes.AddRange(data.questNodes);
+
+                            component.links.Clear();
+                            component.links.AddRange(data.questLinks);
+                        }
+                    }
+                }
+            }
+            // ------------------------------------------------------
+
+            // -------------- Отображение ребер графа. --------------
+            foreach (var link in data.questLinks)
+            {
+                DrawLink(data.questNodes.First(i => i.guid == link.nodeFromGuid).nodeRect, data.questNodes.First(i => i.guid == link.nodeToGuid).nodeRect);
+            }
+            // ------------------------------------------------------
+
+            // -------------- Отображение окон нод. -----------------
+            BeginWindows();
+            for (int i = 0; i < data.questNodes.Count; i++)
+            {
+                data.questNodes[i].nodeRect = GUI.Window(i, data.questNodes[i].nodeRect, DrawNodeWindow, data.questNodes[i].number.ToString());
+            }
+            EndWindows();
+            // ------------------------------------------------------
+
+            GUI.EndGroup();
+        }
+
+        /// <summary>
+        /// Отображение ребра ор. графа.
+        /// </summary>
+        /// <param name="nodeFrom">Node from.</param>
+        /// <param name="nodeTo">Node to.</param>
+        private void DrawLink(Rect rectFrom, Rect rectTo)
+        {
+            Vector3 startPos = new Vector3(rectFrom.x + rectFrom.width, rectFrom.y + rectFrom.height / 2, 0);
+            Vector3 endPos = new Vector3(rectTo.x, rectTo.y + rectTo.height / 2, 0);
+            Vector3 startTan = startPos + Vector3.right * 50;
+            Vector3 endTan = endPos + Vector3.left * 50;
+
+            // Тень.
+            Color shadowCol = new Color(0, 0, 0, 0.06f);
+            for (int i = 0; i < 3; i++)
+            {
+                Handles.DrawBezier(startPos, endPos, startTan, endTan, shadowCol, null, (i + 1) * 5);
+            }
+
+            Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);
+        }
+
+        /// <summary>
+        /// Отображение окна ноды с указанным id.
+        /// </summary>
+        /// <param name="id"></param>
+        private void DrawNodeWindow(int id)
+        {
+            data.questNodes[id].DrawNodeWindow();
+            GUI.DragWindow();
+        }
+        #endregion
+
+        /// <summary>
+        /// Загрузка уже существующих данных.
+        /// </summary>
+        /// <param name="component">Component.</param>
+        private void Load(QuestManager component)
+        {
+            if (component.nodes != null && component.nodes.Any())
+            {
+                data.counter = component.nodes.Select(i => i.number).Max() + 1;
+                data.questNodes = component.nodes;
+            }
+            if (component.links != null && component.links.Any())
+                data.questLinks = component.links;
+        }
     }
 }

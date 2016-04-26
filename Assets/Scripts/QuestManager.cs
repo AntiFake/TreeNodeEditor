@@ -5,10 +5,9 @@ namespace QuestManagerEditor
 {
     public class QuestManager : MonoBehaviour
     {
-        public ComponentData data;
         public List<QuestNode> nodes;
         public List<Link> links;
-
+		
         public void Start()
         {
 
