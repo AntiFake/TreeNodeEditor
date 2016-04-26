@@ -5,16 +5,13 @@ namespace QuestManagerEditor
 {
     public class QuestManager : MonoBehaviour
     {
-        //public List<TreeLink> questTree;
-
         public ComponentData data;
+        public List<QuestNode> nodes;
+        public List<Link> links;
 
         public void Start()
         {
-			if (data == null)
-				Debug.Log ("ХУЙ!");
-			else
-				Debug.Log ("Та неужели");
+
         }
 
         public void Update()

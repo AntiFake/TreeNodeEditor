@@ -217,6 +217,8 @@ namespace QuestManagerEditor
                         if (data.questLinks != null && data.questLinks.Any())
                         {
 							component.data = data;
+                            component.nodes = data.questNodes;
+                            component.links = data.questLinks;
 							//data.obj.GetComponent<QuestManager>().data = data;
                         }
                     }

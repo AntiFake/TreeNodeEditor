@@ -48,14 +48,14 @@ namespace QuestManagerEditor
     [Serializable]
     public class QuestNode
     {
-		[SerializeField]
+        [SerializeField]
         public string guid;
 
-		[SerializeField]
-		public string title;
+        [SerializeField]
+        public string title;
 
-		[SerializeField]
-		public Rect nodeRect;
+        [SerializeField]
+        public Rect nodeRect;
 
         [SerializeField]
         public QuestType questType;
@@ -67,13 +67,13 @@ namespace QuestManagerEditor
         public GameObject questAcceptor;
 
         [SerializeField]
-        public string questName = "";
+        public string questName;
 
         [SerializeField]
-        public string questDescription = "";
+        public string questDescription;
 
         [SerializeField]
-        public int experienceAmount = 0;
+        public int experienceAmount;
 
         // KillQuest
         [SerializeField]

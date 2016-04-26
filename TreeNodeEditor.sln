@@ -1,7 +1,7 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2008
-
-Project("{952951AA-DC7E-0AF1-D5AA-F25EDF3E77E0}") = "TreeNodeEditor", "Assembly-CSharp.csproj", "{B93C4B3D-755B-4851-77AA-C3DEE7B918F0}"
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeNodeEditor.CSharp", "TreeNodeEditor.CSharp.csproj", "{EDAE6B6D-C471-E141-DDD5-B0FAD77EE4F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,15 +9,12 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B93C4B3D-755B-4851-77AA-C3DEE7B918F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B93C4B3D-755B-4851-77AA-C3DEE7B918F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B93C4B3D-755B-4851-77AA-C3DEE7B918F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B93C4B3D-755B-4851-77AA-C3DEE7B918F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDAE6B6D-C471-E141-DDD5-B0FAD77EE4F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDAE6B6D-C471-E141-DDD5-B0FAD77EE4F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDAE6B6D-C471-E141-DDD5-B0FAD77EE4F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDAE6B6D-C471-E141-DDD5-B0FAD77EE4F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Assembly-CSharp.csproj
 	EndGlobalSection
 EndGlobal
