@@ -4,37 +4,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-namespace QuestManagerEditor
+namespace ExpertSystemEditor
 {
-    public class QuestEditor : EditorWindow
+    public class ExpertSystemEditor : EditorWindow
     {
         public class DeleteNodeAction
         {
             public string nodeGuid;
         }
 
-        private const float windowWidth = 250f;
-        private const float windowHeight = 200f;
+        private const float windowWidth = 200f;
+        private const float windowHeight = 100f;
 
-        public static QuestEditor questEditor;
-        public ComponentData data;
+        public static ExpertSystemEditor questEditor;
+        public ExpertSystem data;
 
         private List<string> nodesToJoin = new List<string>();
         private List<string> nodesToTear = new List<string>();
 
         private Vector2 mousePos;
 
-        [MenuItem("Tools/Quest editor")]
+        [MenuItem("Tools/ExpertSystem editor")]
         private static void ShowEditor()
         {
-            questEditor = GetWindow<QuestEditor>();
-            questEditor.titleContent = new GUIContent("Редактор квестов");
+            questEditor = GetWindow<ExpertSystemEditor>();
+            questEditor.titleContent = new GUIContent("Экспертная система");
         }
 
         private void OnEnable()
         {
             if (data == null)
-                data = CreateInstance<ComponentData>();
+                data = CreateInstance<ExpertSystem>();
             hideFlags = HideFlags.HideAndDontSave;
         }
 
@@ -53,7 +53,7 @@ namespace QuestManagerEditor
                 ShowEditor();
 
             //Отображение контекстного меню.
-            if (e.button == 1)
+            if (e.button == 1 && !e.shift)
             {
                 nodesToJoin.Clear();
                 nodesToTear.Clear();
@@ -63,11 +63,11 @@ namespace QuestManagerEditor
                     bool clickedOnWindow = false;
                     string clickedWindowGuid = null;
 
-                    for (int i = 0; i < data.questNodes.Count; i++)
+                    for (int i = 0; i < data.nodes.Count; i++)
                     {
-                        if (data.questNodes[i].nodeRect.Contains(mousePos))
+                        if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.questNodes[i].guid;
+                            clickedWindowGuid = data.nodes[i].guid;
                             clickedOnWindow = true;
                             break;
                         }
@@ -78,7 +78,7 @@ namespace QuestManagerEditor
                     {
                         GenericMenu menuToAddQuest = new GenericMenu();
 
-                        menuToAddQuest.AddItem(new GUIContent("Добавить квест"), false, ContextQuestAddCallback, null);
+                        menuToAddQuest.AddItem(new GUIContent("Добавить ноду"), false, ContextQuestAddCallback, null);
 
                         menuToAddQuest.ShowAsContext();
                         e.Use();
@@ -88,7 +88,7 @@ namespace QuestManagerEditor
                     {
                         GenericMenu menuToControlQuest = new GenericMenu();
 
-                        menuToControlQuest.AddItem(new GUIContent("Удалить квест"), false, ContextQuestControlCallback, new DeleteNodeAction() { nodeGuid = clickedWindowGuid });
+                        menuToControlQuest.AddItem(new GUIContent("Удалить ноду"), false, ContextQuestControlCallback, new DeleteNodeAction() { nodeGuid = clickedWindowGuid });
 
                         menuToControlQuest.ShowAsContext();
                         e.Use();
@@ -96,8 +96,8 @@ namespace QuestManagerEditor
                 }
             }
 
-            // Соединение ребрами нод графа.
-            if (e.button == 0 && e.shift)
+            // Соединение ребрами нод графа (зеленый - ДА, красный - НЕТ).
+            if ((e.button == 0 || e.button == 1) && e.shift)
             {
                 nodesToTear.Clear();
 
@@ -106,11 +106,11 @@ namespace QuestManagerEditor
                     bool clickedOnWindow = false;
                     string clickedWindowGuid = null;
 
-                    for (int i = 0; i < data.questNodes.Count; i++)
+                    for (int i = 0; i < data.nodes.Count; i++)
                     {
-                        if (data.questNodes[i].nodeRect.Contains(mousePos))
+                        if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.questNodes[i].guid;
+                            clickedWindowGuid = data.nodes[i].guid;
                             clickedOnWindow = true;
                             break;
                         }
@@ -126,14 +126,15 @@ namespace QuestManagerEditor
                             // Если не одна и та же нода.
                             if (nodesToJoin[0] != nodesToJoin[1])
                             {
-                                bool exist = data.questLinks.FirstOrDefault(i => i.nodeFromGuid == nodesToJoin[0] && i.nodeToGuid == nodesToJoin[1]) != null ? true : false;
-                                bool existReversed = data.questLinks.FirstOrDefault(i => i.nodeFromGuid == nodesToJoin[1] && i.nodeToGuid == nodesToJoin[0]) != null ? true : false;
+                                bool exist = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToJoin[0] && i.nodeToGuid == nodesToJoin[1]) != null ? true : false;
+                                bool existReversed = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToJoin[1] && i.nodeToGuid == nodesToJoin[0]) != null ? true : false;
                                 if (!exist && !existReversed)
                                 {
-                                    data.questLinks.Add(new Link()
+                                    data.links.Add(new Link()
                                     {
-                                        nodeFromGuid = data.questNodes.First(i => i.guid == nodesToJoin[0]).guid,
-                                        nodeToGuid = data.questNodes.First(i => i.guid == nodesToJoin[1]).guid
+                                        nodeFromGuid = data.nodes.First(i => i.guid == nodesToJoin[0]).guid,
+                                        nodeToGuid = data.nodes.First(i => i.guid == nodesToJoin[1]).guid,
+                                        IsTrue = e.button == 0 ? true : false
                                     });
                                 }
                             }
@@ -144,6 +145,7 @@ namespace QuestManagerEditor
                         nodesToJoin.Clear();
                 }
             }
+           
 
             // Удаление ребра между нодами графа (@copyright "если конечно они у вас есть").
             if (e.button == 0 && e.alt)
@@ -155,11 +157,11 @@ namespace QuestManagerEditor
                     bool clickedOnWindow = false;
                     string clickedWindowGuid = null;
 
-                    for (int i = 0; i < data.questNodes.Count; i++)
+                    for (int i = 0; i < data.nodes.Count; i++)
                     {
-                        if (data.questNodes[i].nodeRect.Contains(mousePos))
+                        if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.questNodes[i].guid;
+                            clickedWindowGuid = data.nodes[i].guid;
                             clickedOnWindow = true;
                             break;
                         }
@@ -172,13 +174,13 @@ namespace QuestManagerEditor
 
                         if (nodesToTear.Count == 2)
                         {
-                            Link link = data.questLinks.FirstOrDefault(i => i.nodeFromGuid == nodesToTear[0] && i.nodeToGuid == nodesToTear[1]);
-                            Link linkReversed = data.questLinks.FirstOrDefault(i => i.nodeFromGuid == nodesToTear[1] && i.nodeToGuid == nodesToTear[0]);
+                            Link link = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToTear[0] && i.nodeToGuid == nodesToTear[1]);
+                            Link linkReversed = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToTear[1] && i.nodeToGuid == nodesToTear[0]);
 
                             if (link != null)
-                                data.questLinks.Remove(link);
+                                data.links.Remove(link);
                             else if (linkReversed != null)
-                                data.questLinks.Remove(linkReversed);
+                                data.links.Remove(linkReversed);
 
                             nodesToTear.Clear();
                         }
@@ -198,7 +200,7 @@ namespace QuestManagerEditor
         /// <param name="obj">Object.</param>
         private void ContextQuestAddCallback(object obj)
         {
-            data.questNodes.Add(new QuestNode()
+            data.nodes.Add(new Node()
             {
                 nodeRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight),
                 number = data.counter
@@ -216,7 +218,7 @@ namespace QuestManagerEditor
             if (deleteAction != null)
             {
                 DeleteNodeLinks(deleteAction.nodeGuid);
-                data.questNodes = data.questNodes.Where(i => i.guid != deleteAction.nodeGuid).ToList();
+                data.nodes = data.nodes.Where(i => i.guid != deleteAction.nodeGuid).ToList();
             }
         }
 
@@ -226,7 +228,7 @@ namespace QuestManagerEditor
         /// <param name="nodeGuid"></param>
         private void DeleteNodeLinks(string nodeGuid)
         {
-            data.questLinks = data.questLinks.Where(i => i.nodeFromGuid != nodeGuid && i.nodeToGuid != nodeGuid).ToList();
+            data.links = data.links.Where(i => i.nodeFromGuid != nodeGuid && i.nodeToGuid != nodeGuid).ToList();
         }
 
         #endregion
@@ -237,47 +239,26 @@ namespace QuestManagerEditor
         /// </summary>
         private void DrawEditor()
         {
-            EditorGUILayout.LabelField("Число нод: " + data.questNodes.Count.ToString());
-            EditorGUILayout.LabelField("Число линков: " + data.questLinks.Count.ToString());
+            EditorGUILayout.LabelField("Число нод: " + data.nodes.Count.ToString());
+            EditorGUILayout.LabelField("Число линков: " + data.nodes.Count.ToString());
             EditorGUILayout.LabelField("Счетчик нод: " + data.counter.ToString());
 
             // -------------- Отображение дерева. ------------------
             GUI.BeginGroup(new Rect(0, 0, position.width, position.height));
 
             // -------------- Кнопки управления. -------------------
-            if (GUI.Button(new Rect(5, 60, 50, 30), "Load"))
-            {
-                if (Selection.activeGameObject != null)
-                {
-                    QuestManager component = Selection.activeGameObject.GetComponent<QuestManager>();
-                    if (component != null)
-                        Load(component);
-                }
-            }
-
-            // Очистка данных.
-            if (GUI.Button(new Rect(65, 60, 50, 30), "Clean"))
-            {
-                //data = new ComponentData();
-                data.questLinks.Clear();
-                data.questNodes.Clear();
-            }
-
             // Сохранение данных.
-            if (GUI.Button(new Rect(125, 60, 50, 30), "Save"))
+            if (GUI.Button(new Rect(5, 60, 50, 30), "Save"))
             {
                 if (Selection.activeGameObject != null)
                 {
-                    QuestManager component = Selection.activeGameObject.GetComponent<QuestManager>();
+                    ExpertSystemManager component = Selection.activeGameObject.GetComponent<ExpertSystemManager>();
                     if (component != null)
                     {
-                        if (data.questLinks != null && data.questLinks.Any())
+                        if (data.links != null && data.links.Any())
                         {
-                            component.nodes.Clear();
-                            component.nodes.AddRange(data.questNodes);
-
-                            component.links.Clear();
-                            component.links.AddRange(data.questLinks);
+                            component.nodes = data.nodes;
+                            component.links = data.links;
                         }
                     }
                 }
@@ -285,17 +266,17 @@ namespace QuestManagerEditor
             // ------------------------------------------------------
 
             // -------------- Отображение ребер графа. --------------
-            foreach (var link in data.questLinks)
+            foreach (var link in data.links)
             {
-                DrawLink(data.questNodes.First(i => i.guid == link.nodeFromGuid).nodeRect, data.questNodes.First(i => i.guid == link.nodeToGuid).nodeRect);
+                DrawLink(link);
             }
             // ------------------------------------------------------
 
             // -------------- Отображение окон нод. -----------------
             BeginWindows();
-            for (int i = 0; i < data.questNodes.Count; i++)
+            for (int i = 0; i < data.nodes.Count; i++)
             {
-                data.questNodes[i].nodeRect = GUI.Window(i, data.questNodes[i].nodeRect, DrawNodeWindow, data.questNodes[i].number.ToString());
+                data.nodes[i].nodeRect = GUI.Window(i, data.nodes[i].nodeRect, DrawNodeWindow, data.nodes[i].number.ToString());
             }
             EndWindows();
             // ------------------------------------------------------
@@ -308,21 +289,27 @@ namespace QuestManagerEditor
         /// </summary>
         /// <param name="nodeFrom">Node from.</param>
         /// <param name="nodeTo">Node to.</param>
-        private void DrawLink(Rect rectFrom, Rect rectTo)
+        private void DrawLink(Link link)
         {
+            Rect rectFrom = data.nodes.First(i => i.guid == link.nodeFromGuid).nodeRect;
+            Rect rectTo = data.nodes.First(i => i.guid == link.nodeToGuid).nodeRect;
+
             Vector3 startPos = new Vector3(rectFrom.x + rectFrom.width, rectFrom.y + rectFrom.height / 2, 0);
             Vector3 endPos = new Vector3(rectTo.x, rectTo.y + rectTo.height / 2, 0);
             Vector3 startTan = startPos + Vector3.right * 50;
             Vector3 endTan = endPos + Vector3.left * 50;
 
             // Тень.
-            Color shadowCol = new Color(0, 0, 0, 0.06f);
-            for (int i = 0; i < 3; i++)
-            {
-                Handles.DrawBezier(startPos, endPos, startTan, endTan, shadowCol, null, (i + 1) * 5);
-            }
+            //Color shadowCol = new Color(0, 0, 0, 0.06f);
+            //for (int i = 0; i < 3; i++)
+            //{
+            //    Handles.DrawBezier(startPos, endPos, startTan, endTan, shadowCol, null, (i + 1) * 5);
+            //}
 
-            Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);
+            if (link.IsTrue)
+                Handles.DrawBezier(startPos, endPos, startTan, endTan, new Color(0f, 0.5f, 0f, 1f), null, 3);
+            else
+                Handles.DrawBezier(startPos, endPos, startTan, endTan, new Color(0.8f, 0f, 0f, 1f), null, 3);
         }
 
         /// <summary>
@@ -331,24 +318,9 @@ namespace QuestManagerEditor
         /// <param name="id"></param>
         private void DrawNodeWindow(int id)
         {
-            data.questNodes[id].DrawNodeWindow();
+            data.nodes[id].DrawNodeWindow();
             GUI.DragWindow();
         }
         #endregion
-
-        /// <summary>
-        /// Загрузка уже существующих данных.
-        /// </summary>
-        /// <param name="component">Component.</param>
-        private void Load(QuestManager component)
-        {
-            if (component.nodes != null && component.nodes.Any())
-            {
-                data.counter = component.nodes.Select(i => i.number).Max() + 1;
-                data.questNodes = component.nodes;
-            }
-            if (component.links != null && component.links.Any())
-                data.questLinks = component.links;
-        }
     }
 }

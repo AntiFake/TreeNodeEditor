@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace QuestManagerEditor
+namespace ExpertSystemEditor
 {
-    public class QuestManager : MonoBehaviour
+    public class ExpertSystemManager : MonoBehaviour
     {
-        public List<QuestNode> nodes;
+        public List<Node> nodes;
         public List<Link> links;
 		
         public void Start()

@@ -47,10 +47,10 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Example\ExampleStruct.cs" />
      <Compile Include="Assets\Scripts\Example\ExampleWindow.cs" />
+     <Compile Include="Assets\Scripts\ExpertSystemClasses.cs" />
+     <Compile Include="Assets\Scripts\ExpertSystemEditor.cs" />
+     <Compile Include="Assets\Scripts\ExpertSystemManager.cs" />
      <Compile Include="Assets\Scripts\NodeEditor.cs" />
-     <Compile Include="Assets\Scripts\QuestEditor.cs" />
-     <Compile Include="Assets\Scripts\QuestEditorClasses.cs" />
-     <Compile Include="Assets\Scripts\QuestManager.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
