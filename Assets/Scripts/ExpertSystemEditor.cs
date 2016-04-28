@@ -13,7 +13,7 @@ namespace ExpertSystemEditor
             public string nodeGuid;
         }
 
-        private const float windowWidth = 200f;
+        private const float windowWidth = 300f;
         private const float windowHeight = 100f;
 
         public static ExpertSystemEditor questEditor;
@@ -78,7 +78,7 @@ namespace ExpertSystemEditor
                     {
                         GenericMenu menuToAddQuest = new GenericMenu();
 
-                        menuToAddQuest.AddItem(new GUIContent("Добавить ноду"), false, ContextQuestAddCallback, null);
+                        menuToAddQuest.AddItem(new GUIContent("Добавить ноду"), false, ContextNodeAddCallback, null);
 
                         menuToAddQuest.ShowAsContext();
                         e.Use();
@@ -88,7 +88,7 @@ namespace ExpertSystemEditor
                     {
                         GenericMenu menuToControlQuest = new GenericMenu();
 
-                        menuToControlQuest.AddItem(new GUIContent("Удалить ноду"), false, ContextQuestControlCallback, new DeleteNodeAction() { nodeGuid = clickedWindowGuid });
+                        menuToControlQuest.AddItem(new GUIContent("Удалить ноду"), false, ContextNodeControlCallback, new DeleteNodeAction() { nodeGuid = clickedWindowGuid });
 
                         menuToControlQuest.ShowAsContext();
                         e.Use();
@@ -198,12 +198,12 @@ namespace ExpertSystemEditor
         /// Добавление ноды.
         /// </summary>
         /// <param name="obj">Object.</param>
-        private void ContextQuestAddCallback(object obj)
+        private void ContextNodeAddCallback(object obj)
         {
             data.nodes.Add(new Node()
             {
                 nodeRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight),
-                number = data.counter
+                number = data.counter,
             });
             data.counter++;
         }
@@ -212,7 +212,7 @@ namespace ExpertSystemEditor
         /// Контекстное меню ноды.
         /// </summary>
         /// <param name="controlActionType">Control action type.</param>
-        private void ContextQuestControlCallback(object controlActionType)
+        private void ContextNodeControlCallback(object controlActionType)
         {
             DeleteNodeAction deleteAction = controlActionType as DeleteNodeAction;
             if (deleteAction != null)

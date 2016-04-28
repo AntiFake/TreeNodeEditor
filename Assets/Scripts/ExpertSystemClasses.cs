@@ -39,28 +39,26 @@ namespace ExpertSystemEditor
         public bool IsTrue;
     }
 
-    // Обозначает "материал" участка карты.
+    /// <summary>
+    /// Тип участка карты.
+    /// </summary>
     public enum PolyType
     {
         Ground,
-        Liquid,
-        Void,
+        Water,
         Obstacle
     }
 
-    // Настройки робота на проходимость.
-    public enum BotPassabilitySettings
+    /// <summary>
+    /// Тип вопроса ноды.
+    /// </summary>
+    public enum NodeType
     {
-        // Ground.
-        Soil,
-        Dust,
-        Sand,
-        Pebbles,
-        // Water.
-        Swamp,
-        OpenWater,
-        // Obstacles.
-        Wall
+        Charge,
+        Exploration,
+        Slope,
+        Passability,
+        Result
     }
 
     [Serializable]
@@ -76,13 +74,19 @@ namespace ExpertSystemEditor
         public Rect nodeRect;
 
         [SerializeField]
-        public string description;
+        public string question;
 
         [SerializeField]
-        public PolyType polyGeneralType;
+        public string result;
 
         [SerializeField]
-        public BotPassabilitySettings polyMaterialType;
+        public NodeType nodeType;
+
+        [SerializeField]
+        public float allowableCharge;
+
+        [SerializeField]
+        public float allowableExploration;
 
         public Node()
         {
@@ -91,9 +95,23 @@ namespace ExpertSystemEditor
 
         public void DrawNodeWindow()
         {
-            polyGeneralType = (PolyType) EditorGUILayout.EnumPopup("Тип: ", polyGeneralType);
-            polyMaterialType = (BotPassabilitySettings) EditorGUILayout.EnumPopup("Материал: ", polyMaterialType);
-            description = EditorGUILayout.TextField("Вопрос:", description);
+            nodeType = (NodeType)EditorGUILayout.EnumPopup("Тип вопроса:", nodeType);
+
+            if (nodeType != NodeType.Result)
+                question = EditorGUILayout.TextField("Вопрос:", question);
+            else
+                result = EditorGUILayout.TextField("Результат:", result);
+
+            if (nodeType == NodeType.Charge)
+            {
+                EditorGUILayout.LabelField("Допустимый заряд:");
+                allowableCharge = EditorGUILayout.Slider(allowableCharge, 0f, 100f);
+            }
+            if (nodeType == NodeType.Exploration)
+            {
+                EditorGUILayout.LabelField("Уровень исследования:");
+                allowableExploration = EditorGUILayout.Slider(allowableExploration, 0f, 100f);
+            }
         }
     }
 
