@@ -2,9 +2,13 @@
 using UnityEditor;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ExpertSystemEditor
 {
+    /// <summary>
+    /// Класс, описывающий ЭС.
+    /// </summary>
     public class ExpertSystem : ScriptableObject
     {
         [SerializeField]
@@ -16,24 +20,208 @@ namespace ExpertSystemEditor
         [SerializeField]
         public List<Link> links;
 
+        [SerializeField]
+        public List<Rule> rules;
+
         public ExpertSystem()
         {
-            links = new List<Link>();
-            nodes = new List<Node>();
-            counter = 0;
+            nodes = new List<Node>()
+            {
+                new Node()
+                {
+                    id = 0,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Exploration,
+                    description = "В зависимости от того сколько процентов карты исследовано будет приниматься дальнейшее решение по передвижению робота.",
+                    question = "Сколько % карты исследовано?",
+                    allowableExploration = 100
+                },
+                new Node()
+                {
+                    id = 2,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Charge,
+                    description = "Робот полностью исследовал карту. В зависимости от уровня заряда его аккумулятора робот примет решение: стоит ли ему вернуться в исходную точку или просто передать данные и ожидать эвакуации.",
+                    question = "Сколько заряда осталось?",
+                    allowableCharge = 10
+                },
+                new Node()
+                {
+                    id = 3,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Result,
+                    description = "Уровень заряда позволяет роботу осуществить передачу данных и постараться вернуться в исходную точку.",
+                    result = "Передать данные и вернуться в ИТ."
+                },
+                new Node()
+                {
+                    id = 4,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Result,
+                    description = "Уровень заряда позволяет роботу только произвести передачу данных и ожидать эвакуации.",
+                    result = "Передать данные и ожидать эвакуации."
+                },
+                new Node()
+                {
+                    id = 1,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Charge,
+                    description = "Робот не полностью исследовал карту. В зависимости от уровня заряда его аккумулятора робот примет решение: стоит ли ему продолжить исследование или же вернуться в исходную точку.",
+                    question = "Сколько заряда осталось?",
+                    allowableCharge = 30
+                },
+                new Node()
+                {
+                    id = 5,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Result,
+                    description = "Уровень заряда аккумулятора низкий, поэтому лучше вернуться в исходную точку, предварительно передав известный данные о карте.",
+                    result = "Передать данные и вернуться в исходную точку."
+                },
+                new Node()
+                {
+                    id = 6,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Passability,
+                    description = "Заряда аккумулятора достаточно, чтобы продолжить сканировать область и перемещаться по неизвестным учаскам карты.",
+                    question = "вляется ли пригодным данный участок местности для перемещения?"
+                },
+                new Node()
+                {
+                    id = 7,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Result,
+                    description = "Местность не является пригодной для перемещения.",
+                    result = "Проложить маршрут в обход заданной области."
+                },
+                new Node()
+                {
+                    id = 8,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Slope,
+                    description = "Робот может пройти через данный участок местности.",
+                    question = "Допустим ли угол наклона местности?"
+                },
+                new Node()
+                {
+                    id = 9,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Result,
+                    description = "Угол наклона местности слишком большой. Робот не может пересечь ее.",
+                    result = "Проложить маршрут в обход заданной области."
+                },
+                new Node()
+                {
+                    id = 10,
+                    nodeRect = new Rect(100, 100, 300, 150),
+                    nodeType = NodeType.Result,
+                    description = "Допустимый угол наклона местности. Робот может проехать.",
+                    result = "Продолжить движение по этой местности."
+                }
+            };
+            links = new List<Link>()
+            {
+                new Link()
+                {
+                    IsTrue = false,
+                    nodeFromId = 0,
+                    nodeToId = 1
+                },
+                new Link()
+                {
+                    IsTrue = true,
+                    nodeFromId = 0,
+                    nodeToId = 2
+                },
+                new Link()
+                {
+                    IsTrue = true,
+                    nodeFromId = 2,
+                    nodeToId = 3
+                },
+                new Link()
+                {
+                    IsTrue = false,
+                    nodeFromId = 2,
+                    nodeToId = 4
+                },
+                new Link()
+                {
+                    IsTrue = false,
+                    nodeFromId = 1,
+                    nodeToId = 5
+                },
+                new Link()
+                {
+                    IsTrue = true,
+                    nodeFromId = 1,
+                    nodeToId = 6
+                },
+                new Link()
+                {
+                    IsTrue = false,
+                    nodeFromId = 6,
+                    nodeToId = 7
+                },
+                new Link()
+                {
+                    IsTrue = true,
+                    nodeFromId = 6,
+                    nodeToId = 8
+                },
+                new Link()
+                {
+                    IsTrue = false,
+                    nodeFromId = 8,
+                    nodeToId = 9
+                },
+                new Link()
+                {
+                    IsTrue = true,
+                    nodeFromId = 8,
+                    nodeToId = 10
+                },
+            };
+
+            rules = new List<Rule>()
+            {
+                new Rule()
+                {
+                    args = new List<int>() { 1, 6},
+                    result = "Исследовано меньше 100% карты и достаточно заряда, чтобы продолжить разведку."
+                },
+                new Rule()
+                {
+                    args = new List<int>() { 2 },
+                    result = "Карты исследована в полном объеме."
+                },
+                new Rule()
+                {
+                    args = new List<int>() { 6, 8},
+                    result = "Осталось проверить угол склона местности, чтобы продолжить движение."
+                }
+            };
+
+            if (nodes.Count > 0)
+                counter = nodes.Select(i => i.id).Max() + 1;
+            else
+                counter = 0;
         }
 
         public void OnEnable() { hideFlags = HideFlags.HideAndDontSave; }
     }
 
+    /// <summary>
+    /// Класс, описывающий дугу графа ЭС.
+    /// </summary>
     [Serializable]
     public class Link
     {
         [SerializeField]
-        public string nodeFromGuid;
+        public int nodeFromId;
 
         [SerializeField]
-        public string nodeToGuid;
+        public int nodeToId;
 
         [SerializeField]
         public bool IsTrue;
@@ -61,14 +249,14 @@ namespace ExpertSystemEditor
         Result
     }
 
+    /// <summary>
+    /// Класс, описывающий ноду графа ЭС.
+    /// </summary>
     [Serializable]
     public class Node
     {
         [SerializeField]
-        public string id;
-
-        [SerializeField]
-        public int number;
+        public int id;
 
         [SerializeField]
         public Rect nodeRect;
@@ -91,10 +279,7 @@ namespace ExpertSystemEditor
         [SerializeField]
         public float allowableExploration;
 
-        public Node()
-        {
-            id = Guid.NewGuid().ToString();
-        }
+        public Node() { }
 
         public void DrawNodeWindow()
         {
@@ -121,101 +306,31 @@ namespace ExpertSystemEditor
         }
     }
 
-    //public enum QuestType
-    //{
-    //    CollectQuest, KillQuest
-    //}
+    /// <summary>
+    /// Класс, описывающий элемент таблицы пояснения.
+    /// </summary>
+    public class DescriptionItem
+    {
+        public int number;
+        public string description;
+    }
 
-    //[Serializable]
-    //public class ComponentData : ScriptableObject
-    //{
-    //    [SerializeField]
-    //    public int counter;
+    public class Argument
+    {
+        public string desciption;
+        public int number;
+    }
 
-    //    [SerializeField]
-    //    public List<QuestNode> questNodes;
+    /// <summary>
+    /// Класс, описывающий правило.
+    /// </summary>
+    [Serializable]
+    public class Rule
+    {
+        [SerializeField]
+        public List<int> args;
 
-    //    [SerializeField]
-    //    public List<Link> questLinks;
-
-    //    public ComponentData()
-    //    {
-    //        questLinks = new List<Link>();
-    //        questNodes = new List<QuestNode>();
-    //        counter = 0;
-    //    }
-
-    //    public void OnEnable() { hideFlags = HideFlags.HideAndDontSave; }
-    //}
-
-    //[Serializable]
-    //public class QuestNode
-    //{
-    //    [SerializeField]
-    //    public string guid;
-
-    //    [SerializeField]
-    //    public int number;
-
-    //    [SerializeField]
-    //    public Rect nodeRect;
-
-    //    [SerializeField]
-    //    public QuestType questType;
-
-    //    [SerializeField]
-    //    public GameObject questIssuer;
-
-    //    [SerializeField]
-    //    public GameObject questAcceptor;
-
-    //    [SerializeField]
-    //    public string questName;
-
-    //    [SerializeField]
-    //    public string questDescription;
-
-    //    [SerializeField]
-    //    public int experienceAmount;
-
-    //    // KillQuest
-    //    [SerializeField]
-    //    public int objectCountToKill;
-    //    [SerializeField]
-    //    public GameObject objectToKill;
-
-    //    // CollectQuest
-    //    [SerializeField]
-    //    public int objectCountToCollect;
-    //    [SerializeField]
-    //    public GameObject objectToCollect;
-
-    //    public QuestNode()
-    //    {
-    //        guid = Guid.NewGuid().ToString();
-    //    }
-
-    //    public void DrawNodeWindow()
-    //    {
-    //        questType = (QuestType)EditorGUILayout.EnumPopup("Тип квеста: ", questType);
-
-    //        questName = EditorGUILayout.TextField("Название квеста:", questName);
-    //        questDescription = EditorGUILayout.TextField("Описание квеста:", questDescription);
-    //        experienceAmount = EditorGUILayout.IntField("Количество опыта:", experienceAmount);
-    //        questIssuer = (GameObject)EditorGUILayout.ObjectField("Дающий квест: ", questIssuer, typeof(GameObject), true);
-    //        questAcceptor = (GameObject)EditorGUILayout.ObjectField("Принимающий квест: ", questAcceptor, typeof(GameObject), true);
-
-    //        if (questType == QuestType.KillQuest)
-    //        {
-    //            objectCountToKill = EditorGUILayout.IntField("Число мобов: ", objectCountToKill);
-    //            objectToKill = (GameObject)EditorGUILayout.ObjectField("Тип моба: ", objectToKill, typeof(GameObject), true);
-    //        }
-
-    //        if (questType == QuestType.CollectQuest)
-    //        {
-    //            objectCountToCollect = EditorGUILayout.IntField("Число объектов: ", objectCountToCollect);
-    //            objectToCollect = (GameObject)EditorGUILayout.ObjectField("Тип объекта: ", objectToCollect, typeof(GameObject), true);
-    //        }
-    //    }
-    //}
+        [SerializeField]
+        public string result;
+    }
 }

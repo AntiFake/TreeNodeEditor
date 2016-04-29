@@ -10,7 +10,7 @@ namespace ExpertSystemEditor
     {
         public class DeleteNodeAction
         {
-            public string nodeGuid;
+            public int id;
         }
 
         private const float windowWidth = 300f;
@@ -19,8 +19,8 @@ namespace ExpertSystemEditor
         public static ExpertSystemEditor questEditor;
         public ExpertSystem data;
 
-        private List<string> nodesToJoin = new List<string>();
-        private List<string> nodesToTear = new List<string>();
+        private List<int> nodesToJoin = new List<int>();
+        private List<int> nodesToTear = new List<int>();
 
         private Vector2 mousePos;
 
@@ -61,13 +61,13 @@ namespace ExpertSystemEditor
                 if (e.type == EventType.MouseDown)
                 {
                     bool clickedOnWindow = false;
-                    string clickedWindowGuid = null;
+                    int? clickedWindowId = null;
 
                     for (int i = 0; i < data.nodes.Count; i++)
                     {
                         if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.nodes[i].id;
+                            clickedWindowId = data.nodes[i].id;
                             clickedOnWindow = true;
                             break;
                         }
@@ -88,7 +88,7 @@ namespace ExpertSystemEditor
                     {
                         GenericMenu menuToControlQuest = new GenericMenu();
 
-                        menuToControlQuest.AddItem(new GUIContent("Удалить ноду"), false, ContextNodeControlCallback, new DeleteNodeAction() { nodeGuid = clickedWindowGuid });
+                        menuToControlQuest.AddItem(new GUIContent("Удалить ноду"), false, ContextNodeControlCallback, new DeleteNodeAction() { id = clickedWindowId.Value });
 
                         menuToControlQuest.ShowAsContext();
                         e.Use();
@@ -104,13 +104,13 @@ namespace ExpertSystemEditor
                 if (e.type == EventType.MouseDown)
                 {
                     bool clickedOnWindow = false;
-                    string clickedWindowGuid = null;
+                    int? clickedWindowId = null;
 
                     for (int i = 0; i < data.nodes.Count; i++)
                     {
                         if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.nodes[i].id;
+                            clickedWindowId = data.nodes[i].id;
                             clickedOnWindow = true;
                             break;
                         }
@@ -119,21 +119,21 @@ namespace ExpertSystemEditor
                     if (clickedOnWindow)
                     {
                         if (nodesToJoin.Count < 2)
-                            nodesToJoin.Add(clickedWindowGuid);
+                            nodesToJoin.Add(clickedWindowId.Value);
 
                         if (nodesToJoin.Count == 2)
                         {
                             // Если не одна и та же нода.
                             if (nodesToJoin[0] != nodesToJoin[1])
                             {
-                                bool exist = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToJoin[0] && i.nodeToGuid == nodesToJoin[1]) != null ? true : false;
-                                bool existReversed = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToJoin[1] && i.nodeToGuid == nodesToJoin[0]) != null ? true : false;
+                                bool exist = data.links.FirstOrDefault(i => i.nodeFromId == nodesToJoin[0] && i.nodeToId == nodesToJoin[1]) != null ? true : false;
+                                bool existReversed = data.links.FirstOrDefault(i => i.nodeFromId == nodesToJoin[1] && i.nodeToId == nodesToJoin[0]) != null ? true : false;
                                 if (!exist && !existReversed)
                                 {
                                     data.links.Add(new Link()
                                     {
-                                        nodeFromGuid = data.nodes.First(i => i.id == nodesToJoin[0]).id,
-                                        nodeToGuid = data.nodes.First(i => i.id == nodesToJoin[1]).id,
+                                        nodeFromId = data.nodes.First(i => i.id == nodesToJoin[0]).id,
+                                        nodeToId = data.nodes.First(i => i.id == nodesToJoin[1]).id,
                                         IsTrue = e.button == 0 ? true : false
                                     });
                                 }
@@ -155,13 +155,13 @@ namespace ExpertSystemEditor
                 if (e.type == EventType.MouseDown)
                 {
                     bool clickedOnWindow = false;
-                    string clickedWindowGuid = null;
+                    int? clickedWindowId = null;
 
                     for (int i = 0; i < data.nodes.Count; i++)
                     {
                         if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.nodes[i].id;
+                            clickedWindowId = data.nodes[i].id;
                             clickedOnWindow = true;
                             break;
                         }
@@ -170,12 +170,12 @@ namespace ExpertSystemEditor
                     if (clickedOnWindow)
                     {
                         if (nodesToTear.Count < 2)
-                            nodesToTear.Add(clickedWindowGuid);
+                            nodesToTear.Add(clickedWindowId.Value);
 
                         if (nodesToTear.Count == 2)
                         {
-                            Link link = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToTear[0] && i.nodeToGuid == nodesToTear[1]);
-                            Link linkReversed = data.links.FirstOrDefault(i => i.nodeFromGuid == nodesToTear[1] && i.nodeToGuid == nodesToTear[0]);
+                            Link link = data.links.FirstOrDefault(i => i.nodeFromId == nodesToTear[0] && i.nodeToId == nodesToTear[1]);
+                            Link linkReversed = data.links.FirstOrDefault(i => i.nodeFromId == nodesToTear[1] && i.nodeToId == nodesToTear[0]);
 
                             if (link != null)
                                 data.links.Remove(link);
@@ -203,7 +203,7 @@ namespace ExpertSystemEditor
             data.nodes.Add(new Node()
             {
                 nodeRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight),
-                number = data.counter,
+                id = data.counter,
             });
             data.counter++;
         }
@@ -217,8 +217,8 @@ namespace ExpertSystemEditor
             DeleteNodeAction deleteAction = controlActionType as DeleteNodeAction;
             if (deleteAction != null)
             {
-                DeleteNodeLinks(deleteAction.nodeGuid);
-                data.nodes = data.nodes.Where(i => i.id != deleteAction.nodeGuid).ToList();
+                DeleteNodeLinks(deleteAction.id);
+                data.nodes = data.nodes.Where(i => i.id != deleteAction.id).ToList();
             }
         }
 
@@ -226,9 +226,9 @@ namespace ExpertSystemEditor
         /// Удаление ребер, исходящих/входящих в удаляемую ноду.
         /// </summary>
         /// <param name="nodeGuid"></param>
-        private void DeleteNodeLinks(string nodeGuid)
+        private void DeleteNodeLinks(int id)
         {
-            data.links = data.links.Where(i => i.nodeFromGuid != nodeGuid && i.nodeToGuid != nodeGuid).ToList();
+            data.links = data.links.Where(i => i.nodeFromId != id && i.nodeToId != id).ToList();
         }
 
         #endregion
@@ -259,6 +259,7 @@ namespace ExpertSystemEditor
                         {
                             component.nodes = data.nodes;
                             component.links = data.links;
+                            component.rules = data.rules;
                         }
                     }
                 }
@@ -276,7 +277,7 @@ namespace ExpertSystemEditor
             BeginWindows();
             for (int i = 0; i < data.nodes.Count; i++)
             {
-                data.nodes[i].nodeRect = GUI.Window(i, data.nodes[i].nodeRect, DrawNodeWindow, data.nodes[i].number.ToString());
+                data.nodes[i].nodeRect = GUI.Window(i, data.nodes[i].nodeRect, DrawNodeWindow, data.nodes[i].id.ToString());
             }
             EndWindows();
             // ------------------------------------------------------
@@ -291,8 +292,8 @@ namespace ExpertSystemEditor
         /// <param name="nodeTo">Node to.</param>
         private void DrawLink(Link link)
         {
-            Rect rectFrom = data.nodes.First(i => i.id == link.nodeFromGuid).nodeRect;
-            Rect rectTo = data.nodes.First(i => i.id == link.nodeToGuid).nodeRect;
+            Rect rectFrom = data.nodes.First(i => i.id == link.nodeFromId).nodeRect;
+            Rect rectTo = data.nodes.First(i => i.id == link.nodeToId).nodeRect;
 
             Vector3 startPos = new Vector3(rectFrom.x + rectFrom.width, rectFrom.y + rectFrom.height / 2, 0);
             Vector3 endPos = new Vector3(rectTo.x, rectTo.y + rectTo.height / 2, 0);
