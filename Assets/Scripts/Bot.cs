@@ -39,7 +39,7 @@ public class Bot : MonoBehaviour {
         expertSystemManager = GetComponent<ExpertSystemManager>();
         string startNodeId = expertSystemManager.GetStartNodeId();
         List<string> solution = new List<string>();
-        expertSystemManager.Solve(this, ref solution, startNodeId);
+        expertSystemManager.GetSolution(this, ref solution, startNodeId);
 	}
 	
 	private void Update ()

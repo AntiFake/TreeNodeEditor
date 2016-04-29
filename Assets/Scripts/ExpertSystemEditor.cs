@@ -14,7 +14,7 @@ namespace ExpertSystemEditor
         }
 
         private const float windowWidth = 300f;
-        private const float windowHeight = 100f;
+        private const float windowHeight = 150f;
 
         public static ExpertSystemEditor questEditor;
         public ExpertSystem data;
@@ -67,7 +67,7 @@ namespace ExpertSystemEditor
                     {
                         if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.nodes[i].guid;
+                            clickedWindowGuid = data.nodes[i].id;
                             clickedOnWindow = true;
                             break;
                         }
@@ -110,7 +110,7 @@ namespace ExpertSystemEditor
                     {
                         if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.nodes[i].guid;
+                            clickedWindowGuid = data.nodes[i].id;
                             clickedOnWindow = true;
                             break;
                         }
@@ -132,8 +132,8 @@ namespace ExpertSystemEditor
                                 {
                                     data.links.Add(new Link()
                                     {
-                                        nodeFromGuid = data.nodes.First(i => i.guid == nodesToJoin[0]).guid,
-                                        nodeToGuid = data.nodes.First(i => i.guid == nodesToJoin[1]).guid,
+                                        nodeFromGuid = data.nodes.First(i => i.id == nodesToJoin[0]).id,
+                                        nodeToGuid = data.nodes.First(i => i.id == nodesToJoin[1]).id,
                                         IsTrue = e.button == 0 ? true : false
                                     });
                                 }
@@ -161,7 +161,7 @@ namespace ExpertSystemEditor
                     {
                         if (data.nodes[i].nodeRect.Contains(mousePos))
                         {
-                            clickedWindowGuid = data.nodes[i].guid;
+                            clickedWindowGuid = data.nodes[i].id;
                             clickedOnWindow = true;
                             break;
                         }
@@ -218,7 +218,7 @@ namespace ExpertSystemEditor
             if (deleteAction != null)
             {
                 DeleteNodeLinks(deleteAction.nodeGuid);
-                data.nodes = data.nodes.Where(i => i.guid != deleteAction.nodeGuid).ToList();
+                data.nodes = data.nodes.Where(i => i.id != deleteAction.nodeGuid).ToList();
             }
         }
 
@@ -291,8 +291,8 @@ namespace ExpertSystemEditor
         /// <param name="nodeTo">Node to.</param>
         private void DrawLink(Link link)
         {
-            Rect rectFrom = data.nodes.First(i => i.guid == link.nodeFromGuid).nodeRect;
-            Rect rectTo = data.nodes.First(i => i.guid == link.nodeToGuid).nodeRect;
+            Rect rectFrom = data.nodes.First(i => i.id == link.nodeFromGuid).nodeRect;
+            Rect rectTo = data.nodes.First(i => i.id == link.nodeToGuid).nodeRect;
 
             Vector3 startPos = new Vector3(rectFrom.x + rectFrom.width, rectFrom.y + rectFrom.height / 2, 0);
             Vector3 endPos = new Vector3(rectTo.x, rectTo.y + rectTo.height / 2, 0);

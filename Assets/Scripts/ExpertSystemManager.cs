@@ -12,13 +12,13 @@ namespace ExpertSystemEditor
         public string GetStartNodeId()
         {
             var min = nodes.Select(i => i.number).Min();
-            return nodes.First(i => i.number == min).guid;
+            return nodes.First(i => i.number == min).id;
         }
 
         public string GetRandomResultNodeId()
         {
             var nds = nodes.Where(i => i.nodeType == NodeType.Result).ToArray();
-            return nds[Random.Range(0, nds.Length - 1)].guid;
+            return nds[Random.Range(0, nds.Length - 1)].id;
         }
         
         /// <summary>
@@ -26,15 +26,15 @@ namespace ExpertSystemEditor
         /// </summary>
         /// <param name="nodeId"></param>
         /// <param name="iteration"></param>
-        public void Solve(Bot bot, ref List<string> solution, string nodeId, int iteration = 0)
+        public void GetSolution(Bot bot, ref List<string> solution, string nodeId, int iteration = 0)
         {
             // Решение найдено!
             if (string.IsNullOrEmpty(nodeId))
                 return;
 
             string nextNodeId = string.Empty;
-            var node = nodes.First(i => i.guid == nodeId);
-            var lnks = links.Where(i => i.nodeFromGuid == node.guid);
+            var node = nodes.First(i => i.id == nodeId);
+            var lnks = links.Where(i => i.nodeFromGuid == node.id);
 
             switch (node.nodeType)
             {
@@ -47,7 +47,7 @@ namespace ExpertSystemEditor
                         else
                             nextNodeId = lnks.First(i => !i.IsTrue).nodeToGuid;
 
-                        solution.Add(node.question);
+                        solution.Add(node.id);
                         break;
                     }
                 case NodeType.Charge:
@@ -58,7 +58,7 @@ namespace ExpertSystemEditor
                         else
                             nextNodeId = lnks.First(i => !i.IsTrue).nodeToGuid;
 
-                        solution.Add(node.question);
+                        solution.Add(node.id);
                         break;
                     }
                 case NodeType.Passability:
@@ -69,7 +69,7 @@ namespace ExpertSystemEditor
                         else
                             nextNodeId = lnks.First(i => !i.IsTrue).nodeToGuid;
 
-                        solution.Add(node.question);
+                        solution.Add(node.id);
                         break;
                     }
                 case NodeType.Slope:
@@ -80,18 +80,31 @@ namespace ExpertSystemEditor
                         else
                             nextNodeId = lnks.First(i => !i.IsTrue).nodeToGuid;
 
-                        solution.Add(node.question);
+                        solution.Add(node.description);
                         break;
                     }
                 case NodeType.Result:
                     {
                         nextNodeId = string.Empty;
-                        solution.Add(node.result);
+                        solution.Add(node.id);
                         break;
                     }
             }
             iteration++;
-            Solve(bot, ref solution, nextNodeId, iteration);
+            GetSolution(bot, ref solution, nextNodeId, iteration);
+        }
+
+        /// <summary>
+        /// Обратный решатель.
+        /// </summary>
+        /// <param name="solution"></param>
+        /// <param name="nodeId"></param>
+        public void GetReverseSolution(ref List<string> solution, string nodeId)
+        {
+            if (string.IsNullOrEmpty(nodeId))
+                return;
+
+            // ...
         }
     }
 }

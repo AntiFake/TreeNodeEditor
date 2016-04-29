@@ -65,7 +65,7 @@ namespace ExpertSystemEditor
     public class Node
     {
         [SerializeField]
-        public string guid;
+        public string id;
 
         [SerializeField]
         public int number;
@@ -75,6 +75,9 @@ namespace ExpertSystemEditor
 
         [SerializeField]
         public string question;
+
+        [SerializeField]
+        public string description;
 
         [SerializeField]
         public string result;
@@ -90,15 +93,18 @@ namespace ExpertSystemEditor
 
         public Node()
         {
-            guid = Guid.NewGuid().ToString();
+            id = Guid.NewGuid().ToString();
         }
 
         public void DrawNodeWindow()
         {
             nodeType = (NodeType)EditorGUILayout.EnumPopup("Тип вопроса:", nodeType);
+            description = EditorGUILayout.TextField("Описание:", description);
 
             if (nodeType != NodeType.Result)
+            {
                 question = EditorGUILayout.TextField("Вопрос:", question);
+            }
             else
                 result = EditorGUILayout.TextField("Результат:", result);
 
